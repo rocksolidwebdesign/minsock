@@ -7,9 +7,8 @@ int main(int argc, char **argv)
     std::string request;
     std::string response;
 
-    Minsock::Socket *server;
-
-    server = new Minsock::Socket(
+    Minsock::Socket *server
+        = new Minsock::Socket(
             "localhost", "123098",
             Minsock::CONNECT_CLIENT);
 
@@ -23,9 +22,9 @@ int main(int argc, char **argv)
         std::cin >> request;
         std::cout << "You entered: '" << request << "'" << std::endl;
 
-        server->send(request);
+        server->send(request+"\n");
 
-        if (request == "q\n")
+        if (request == "q")
         {
             std::cout << "Bye Bye!" << std::endl;
             break;

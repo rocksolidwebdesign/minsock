@@ -9,9 +9,11 @@ LIB_PREFIX=/usr/local/lib
 WIN32_CC=i586-mingw32msvc-gcc
 WIN32_CC_OPTS=-g -Wall
 
-all: libminsockcxx.so server tests
+all: library examples tests
 
-server: server client serverxx clientxx
+library: libminsockcxx.so
+
+examples: server client serverxx clientxx
 
 tests: testcc testxx
 

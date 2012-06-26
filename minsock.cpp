@@ -62,17 +62,24 @@ namespace Minsock
 
     void Socket::send(std::string message)
     {
-        strcpy(this->s->request, message.c_str());
-        minsock_send(this->s);
+        const char *msg = message.c_str();
+
+        minsock_send(this->s, msg);
     }
 
     std::string Socket::recv()
     {
-        minsock_recv(this->s);
+        char *response = minsock_strnew();
 
-        std::string response(this->s->response);
+        std::cout << "Response" << response << std::endl;
 
-        return response;
+        minsock_recv(this->s, &response);
+
+        std::string result(response);
+
+        free(response);
+
+        return result;
     }
 
     void Socket::close(void)

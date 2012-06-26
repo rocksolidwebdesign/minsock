@@ -68,16 +68,21 @@ void minsock_bind(MINSOCKET *s);
 void minsock_listen(MINSOCKET *s);
 MINSOCKET* minsock_accept(MINSOCKET *s);
 
-void minsock_recv(MINSOCKET *s);
-void minsock_send(MINSOCKET *s);
+void minsock_recv(MINSOCKET *s, char **response);
+void minsock_send(MINSOCKET *s, const char *request);
 
 void minsock_close(MINSOCKET *s);
 void minsock_free(MINSOCKET *s);
 void minsock_destroy(MINSOCKET *s);
 
 /* utility functions */
-char * minsock_resolve(const char *hostname);
-void minsock_getline(char *result);
+void minsock_resolve(char **ip, const char *hostname);
+
+/* string functions */
+char* minsock_strnew();
+void minsock_stradd(char **message, const char *append);
+void minsock_strset(char **message, const char *source);
+void minsock_getline(char **result);
 
 /* winsock related stuff */
 void minsock_win32_init(void);

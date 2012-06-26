@@ -4,17 +4,17 @@ int main(int argc, char **argv)
 {
     minsock_win32_init();
 
-    Minsock::Socket *server;
-    Minsock::Socket *client;
-
     std::string request;
     std::string response;
 
-    server = new Minsock::Socket(
+    Minsock::Socket *server
+        = new Minsock::Socket(
             "localhost", "123098",
             Minsock::LISTEN_SERVER);
 
-    client = server->accept();
+    std::cout << "Server is running" << std::endl;
+
+    Minsock::Socket *client = server->accept();
 
     std::cout << "Client Connected" << std::endl;
 
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
         request = client->recv();
         std::cout << "Incoming Message: '" << request << "'" << std::endl;
 
-        if (request == "q")
+        if (request == "q\n")
         {
             std::cout << "Bye bye!" << std::endl;
             break;

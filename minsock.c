@@ -38,9 +38,13 @@ MINSOCKET* minsock_new()
     s->address_length =  malloc(sizeof(*(s->address_length)));
 
     *(s->address_length) = sizeof(*(s->address));
-    strcpy(s->until, "\n");
-    strcpy(s->response, "");
-    strcpy(s->request, "");
+
+    minsock_strset(&s->until, "\n");
+    minsock_strset(&s->host, "");
+    minsock_strset(&s->port, "");
+    minsock_strset(&s->ip, "");
+    minsock_strset(&s->response, "");
+    minsock_strset(&s->request, "");
 
     *(s->connection) = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -51,10 +55,10 @@ MINSOCKET* minsock_new()
 
 void minsock_host(MINSOCKET *s, const char *host, const char *port)
 {
-    strcpy(s->host, host);
-    strcpy(s->port, port);
+    minsock_strset(&s->host, host);
+    minsock_strset(&s->port, port);
 
-    s->ip = minsock_resolve(s->host);
+    minsock_resolve(&s->ip, host);
 
     printf("Listening On %s:%s\n", s->ip, s->port);
 
@@ -136,8 +140,7 @@ void minsock_listen(MINSOCKET *s)
 
 MINSOCKET* minsock_accept(MINSOCKET *s)
 {
-    MINSOCKET *n;
-    n = minsock_new();
+    MINSOCKET *n = minsock_new();
 
     *(n->address_length) = sizeof(*(s->address));
     *(n->connection) = accept(*(s->connection), (struct sockaddr*)n->address, n->address_length);
@@ -149,36 +152,40 @@ MINSOCKET* minsock_accept(MINSOCKET *s)
     return n;
 }
 
-void minsock_recv(MINSOCKET *s)
+void minsock_recv(MINSOCKET *s, char **response)
 {
-    int s = 256;
+    int z = 256;
     int status;
-    char buffer[s];
+    char buffer[z];
 
-    strcpy(s->response, "");
+    minsock_strset(response, "");
 
     do
     {
-        memset(buffer, 0, s);
-        status = recv(*(s->connection), buffer, s-1, 0);
+        memset(buffer, 0, z);
+        status = recv(*(s->connection), buffer, z-1, 0);
         minsock_err(status, "Could not read socket");
 
-        minsock_strcat(s->response, buffer);
+        minsock_stradd(response, buffer);
     }
     while (strstr(buffer, s->until) == NULL);
 
     fprintf(stdout, "Socket read successful.\n");
 }
 
-void minsock_send(MINSOCKET *s)
+void minsock_send(MINSOCKET *s, const char *request)
 {
     int result;
+    char *r = minsock_strnew();
+    minsock_strset(&r, request);
 
-    result = send(*(s->connection), s->request, strlen(s->request), 0);
+    result = send(*(s->connection), r, strlen(r), 0);
 
     minsock_err(result, "Could not write socket");
 
     fprintf(stdout, "Socket write successful.\n");
+
+    free(r);
 }
 
 void minsock_close(MINSOCKET *s)
@@ -213,11 +220,9 @@ void minsock_destroy(MINSOCKET *s)
     minsock_free(s);
 }
 
-char * minsock_resolve(const char *hostname)
-{
-    char *ip;
-    ip = malloc(sizeof(*ip));
 
+void minsock_resolve(char **ip, const char *hostname)
+{
     struct hostent *host_info;
     struct in_addr **addr_list;
     int i;
@@ -234,26 +239,38 @@ char * minsock_resolve(const char *hostname)
     for (i = 0; addr_list[i] != NULL; i++)
     {
         //Return the first one;
-        minsock_strcpy(ip, inet_ntoa(*addr_list[i]));
-        return ip;
+        minsock_strset(ip, inet_ntoa(*addr_list[i]));
+        return;
     }
+
+    free(ip);
+    free(host_info);
+    free(*addr_list);
+    free(addr_list);
 
     exit(1);
 }
 
-void minsock_stradd(char *message, char *append)
+char * minsock_strnew()
 {
-    message = realloc(message, strlen(message)+strlen(append)+1);
-    strcat(message, append);
+    char *n = malloc(sizeof(char)+2);
+    strcpy(n, "");
+    return n;
 }
 
-void minsock_strset(char *message, char *source)
+void minsock_stradd(char **message, const char *append)
 {
-    message = realloc(message, strlen(source)+1);
-    strcpy(message, source);
+    *message = realloc(*message, strlen(*message)+strlen(append)+1);
+    strcat(*message, append);
 }
 
-void minsock_getline(char *result)
+void minsock_strset(char **message, const char *source)
+{
+    *message = realloc(*message, strlen(source)+1);
+    strcpy(*message, source);
+}
+
+void minsock_getline(char **result)
 {
     int s = 256;
     char buffer[s];
