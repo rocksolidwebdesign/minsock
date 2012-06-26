@@ -1,38 +1,63 @@
-CC=gcc
-CC_OPTS=-g -Wall
-OUT_DIR=bin
+CXX_CC=g++
+CC_OPTS=-Wall -g
+SHARED_OPTS=-fPIC -shared
 OBJ_DIR=lib
+OUT_DIR=bin
+INCLUDE_PREFIX=/usr/local/include
+LIB_PREFIX=/usr/local/lib
 
 WIN32_CC=i586-mingw32msvc-gcc
 WIN32_CC_OPTS=-g -Wall
 
-all: linux
+all: libminsockcxx.so server tests
 
-linux: server client
+server: server client serverxx clientxx
 
-server: server.o minsock.o
-	$(CC) $(WIN32_CC_OPTS) $(OBJ_DIR)/minsock.o $(OBJ_DIR)/server.o -o $(OUT_DIR)/server
-client: client.o minsock.o
-	$(CC) $(WIN32_CC_OPTS) $(OBJ_DIR)/minsock.o $(OBJ_DIR)/client.o -o $(OUT_DIR)/client
-server.o: server.c minsock.h global.h
-	$(CC) $(WIN32_CC_OPTS) -c server.c -o $(OBJ_DIR)/server.o
-client.o: client.c minsock.h global.h
-	$(CC) $(WIN32_CC_OPTS) -c client.c -o $(OBJ_DIR)/client.o
-minsock.o: minsock.c minsock.h global.h
-	$(CC) $(WIN32_CC_OPTS) -c minsock.c -o $(OBJ_DIR)/minsock.o
+tests: testcc testxx
 
-windows: server.exe client.exe
+libminsockcxx.so: libminsock.so minsock.hpp
+	$(CXX_CC) $(CC_OPTS) $(SHARED_OPTS) ./minsock.cpp -o ./$(OBJ_DIR)/libminsockcxx.so
 
-server.exe: server.a minsock.a
-	$(WIN32_CC) $(CC_OPTS) $(OBJ_DIR)/server.a $(OBJ_DIR)/minsock.a -o $(OUT_DIR)/server.exe -lws2_32
-client.exe: client.a minsock.a
-	$(WIN32_CC) $(CC_OPTS) $(OBJ_DIR)/client.a $(OBJ_DIR)/minsock.a -o $(OUT_DIR)/client.exe -lws2_32
-server.a: server.c minsock.h global.h
-	$(WIN32_CC) $(CC_OPTS) -c server.c -o $(OBJ_DIR)/server.a -lws2_32
-client.a: client.c minsock.h global.h
-	$(WIN32_CC) $(CC_OPTS) -c client.c -o $(OBJ_DIR)/client.a -lws2_32
-minsock.a: minsock.c minsock.h global.h
-	$(WIN32_CC) $(CC_OPTS) -c minsock.c -o $(OBJ_DIR)/minsock.a -lws2_32
+libminsock.so: minsock.c minsock.h
+	$(CC) $(CC_OPTS) $(SHARED_OPTS) ./minsock.c -o ./$(OBJ_DIR)/libminsock.so
+
+testcc:
+	$(CC) $(CC_OPTS) ./test/test.c -o ./$(OUT_DIR)/test -lminsock
+testxx:
+	$(CXX_CC) $(CC_OPTS) ./test/test.cpp -o ./$(OUT_DIR)/testxx -lminsock
+
+server:
+	$(CC) $(CC_OPTS) ./test/server.c -o ./$(OUT_DIR)/server -lminsock
+client:
+	$(CC) $(CC_OPTS) ./test/client.c -o ./$(OUT_DIR)/client -lminsock
+
+serverxx:
+	$(CXX_CC) $(CC_OPTS) ./test/server.cpp -o ./$(OUT_DIR)/serverxx -lminsock -lminsockcxx
+clientxx:
+	$(CXX_CC) $(CC_OPTS) ./test/client.cpp -o ./$(OUT_DIR)/clientxx -lminsock -lminsockcxx
+
+install: uninstall
+	cp ./$(OBJ_DIR)/libminsock.so /usr/local/lib
+	cp ./$(OBJ_DIR)/libminsockcxx.so /usr/local/lib
+	mkdir -p $(INCLUDE_PREFIX)/minsock
+	cp minsock.h $(INCLUDE_PREFIX)/
+	cp minsock.hpp $(INCLUDE_PREFIX)/
+	ln -s $(LIB_PREFIX)/libminsock.so $(LIB_PREFIX)/libminsock.so.0
+	ln -s $(LIB_PREFIX)/libminsock.so $(LIB_PREFIX)/libminsock.so.0.0.1
+	ln -s $(LIB_PREFIX)/libminsockcxx.so $(LIB_PREFIX)/libminsockcxx.so.0
+	ln -s $(LIB_PREFIX)/libminsockcxx.so $(LIB_PREFIX)/libminsockcxx.so.0.0.1
+	ldconfig
+
+uninstall:
+	rm -rf $(LIB_PREFIX)/libminsock*
+	rm -rf $(INCLUDE_PREFIX)/minsock*
+	ldconfig
+
+#windows: minsock.a
+#	$(WIN32_CC) $(CC_OPTS) -shared -o $(OBJ_DIR)/minsock.dll $(OBJ_DIR)/minsock.a -lws2_32
+#
+#minsock.a: minsock.c minsock.h
+#	$(WIN32_CC) $(CC_OPTS) -c minsock.c -o $(OBJ_DIR)/minsock.a -lws2_32
 
 clean:
-	rm -rf $(OUT_DIR)/* $(OBJ_DIR)/*
+	rm -rf ./$(OUT_DIR)/client* ./$(OUT_DIR)/server* ./$(OUT_DIR)/test* ./$(OBJ_DIR)/*.o ./$(OBJ_DIR)/*.so*
