@@ -2,12 +2,16 @@
 
 int main(int argc, char **argv)
 {
+    char *request;
+    char *response;
+    MINSOCKET *server;
+
     minsock_win32_init();
 
-    char *request  = minsock_strnew();
-    char *response = minsock_strnew();
+    request  = minsock_strnew();
+    response = minsock_strnew();
 
-    MINSOCKET *server = minsock_open_connection("localhost", "123098");
+    server = minsock_open_connection("localhost", "123098");
 
     fprintf(stdout, "Connected to server. %d\n", *(server->connection));
 

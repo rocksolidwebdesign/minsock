@@ -2,13 +2,13 @@
 
 int main(int argc, char **argv)
 {
-    minsock_win32_init();
-
     std::string request;
     std::string response;
+    Minsock::Socket *server;
 
-    Minsock::Socket *server
-        = new Minsock::Socket(
+    minsock_win32_init();
+
+    server = new Minsock::Socket(
             "localhost", "123098",
             Minsock::CONNECT_CLIENT);
 

@@ -1,4 +1,4 @@
-#include "minsock.hpp"
+#include <minsock.hpp>
 
 namespace Minsock
 {

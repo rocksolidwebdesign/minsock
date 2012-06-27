@@ -1,4 +1,4 @@
-#include "minsock.h"
+#include <minsock.h>
 
 void minsock_err(int result, const char *msg)
 {
@@ -65,7 +65,7 @@ void minsock_host(MINSOCKET *s, const char *host, const char *port)
     s->address->sin_family = AF_INET;
 
     /* set the host */
-#ifdef _WIN32
+#ifdef WINDOWS
     s->address->sin_addr.s_addr = inet_addr(s->ip);
 #else
     inet_aton(s->ip, &s->address->sin_addr);
@@ -131,9 +131,11 @@ void minsock_bind(MINSOCKET *s)
 
 void minsock_listen(MINSOCKET *s)
 {
+    int result;
+
     minsock_bind(s);
 
-    int result = listen(*(s->connection), 5);
+    result = listen(*(s->connection), 5);
 
     minsock_err(result, "Could not listen for connections");
 }
@@ -156,7 +158,7 @@ void minsock_recv(MINSOCKET *s, char **response)
 {
     int z = 256;
     int status;
-    char buffer[z];
+    char buffer[256];
 
     minsock_strset(response, "");
 
@@ -190,7 +192,7 @@ void minsock_send(MINSOCKET *s, const char *request)
 
 void minsock_close(MINSOCKET *s)
 {
-#ifdef _WIN32
+#ifdef WINDOWS
     closesocket(*(s->connection));
 #else
     close(*(s->connection));
@@ -273,7 +275,7 @@ void minsock_strset(char **message, const char *source)
 void minsock_getline(char **result)
 {
     int s = 256;
-    char buffer[s];
+    char buffer[256];
 
     minsock_strset(result, "");
 
@@ -294,7 +296,7 @@ void minsock_getline(char **result)
 
 void minsock_win32_init(void)
 {
-#ifdef _WIN32
+#ifdef WINDOWS
     WORD wVersionRequested;
     WSADATA wsaData;
 
@@ -321,7 +323,7 @@ void minsock_win32_init(void)
 
 void minsock_win32_down(void)
 {
-#ifdef _WIN32
+#ifdef WINDOWS
     WSACleanup();
 #endif
 }

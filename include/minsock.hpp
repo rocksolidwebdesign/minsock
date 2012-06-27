@@ -7,11 +7,6 @@
 #include <cstdlib>
 #include <cerrno>
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
 extern "C" {
     #include "minsock.h"
 }
@@ -20,7 +15,7 @@ namespace Minsock
 {
     enum { LISTEN_SERVER, CONNECT_CLIENT };
 
-    class Socket
+    class DLLIFACE Socket
     {
         MINSOCKET *s;
 
@@ -30,7 +25,6 @@ namespace Minsock
             Socket(std::string host, std::string port);
             Socket(std::string host, std::string port, int type);
             ~Socket();
-
             void connect();
             void connect(std::string host, std::string port);
             void listen(std::string host, std::string port);

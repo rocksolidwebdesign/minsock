@@ -2,15 +2,20 @@
 
 int main(int argc, char **argv)
 {
+    char *request;
+    char *response;
+    MINSOCKET *server;
+    MINSOCKET *client;
+
     minsock_win32_init();
 
-    char *request  = minsock_strnew();
-    char *response = minsock_strnew();
+    request  = minsock_strnew();
+    response = minsock_strnew();
 
-    MINSOCKET *server = minsock_start_server("localhost", "123098");
+    server = minsock_start_server("localhost", "123098");
     printf("Server started. %d\n", *(server->connection));
 
-    MINSOCKET *client = minsock_accept(server);
+    client = minsock_accept(server);
     printf("Client connected. %d\n", *(client->connection));
 
     /* main event loop {{{ */
